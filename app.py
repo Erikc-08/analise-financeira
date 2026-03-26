@@ -3,9 +3,6 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
-# =========================
-# CONFIGURAÇÃO VISUAL (EMPRESARIAL)
-# =========================
 st.set_page_config(page_title="Análise Financeira", layout="wide")
 
 st.markdown("""
@@ -28,9 +25,6 @@ st.title("📊 Análise: Pagamento à Vista vs Parcelado")
 
 st.markdown("Ferramenta para análise de decisão financeira baseada em valor do dinheiro no tempo.")
 
-# =========================
-# TAXAS
-# =========================
 taxas = {
     "Selic": 13.75,
     "CDI": 13.65,
@@ -39,9 +33,6 @@ taxas = {
     "Taxa Personalizada": None
 }
 
-# =========================
-# INPUTS
-# =========================
 col1, col2 = st.columns(2)
 
 with col1:
@@ -58,9 +49,6 @@ with col2:
     else:
         taxa_anual = taxas[taxa_nome]
 
-# =========================
-# CÁLCULOS
-# =========================
 taxa_mensal = (1 + taxa_anual / 100) ** (1/12) - 1
 
 preco_avista = preco * (1 - desconto/100)
@@ -68,7 +56,6 @@ preco_avista = preco * (1 - desconto/100)
 valor_financiado = preco - entrada
 parcela = valor_financiado / parcelas
 
-# Valor presente do parcelamento
 vp = 0
 for t in range(1, parcelas + 1):
     vp += parcela / ((1 + taxa_mensal) ** t)
@@ -85,9 +72,6 @@ for i in range(parcelas):
 
 valor_final_investimento = investimento
 
-# =========================
-# DECISÃO
-# =========================
 if valor_final_investimento > preco:
     decisao = "Recomendação: Parcelar e investir o capital disponível."
     cor = "#22c55e"
@@ -95,9 +79,6 @@ else:
     decisao = "Recomendação: Efetuar pagamento à vista."
     cor = "#ef4444"
 
-# =========================
-# RESULTADOS
-# =========================
 st.subheader("Resumo da análise")
 
 col3, col4, col5 = st.columns(3)
@@ -108,9 +89,6 @@ col5.metric("Valor futuro do investimento", f"R$ {valor_final_investimento:,.2f}
 
 st.markdown(f"<h3 style='color:{cor}'>{decisao}</h3>", unsafe_allow_html=True)
 
-# =========================
-# GRÁFICO
-# =========================
 st.subheader("Evolução do capital investido")
 
 fig = go.Figure()
@@ -131,9 +109,6 @@ fig.update_layout(
 
 st.plotly_chart(fig, use_container_width=True)
 
-# =========================
-# TABELA
-# =========================
 st.subheader("Detalhamento por período")
 
 data = []
