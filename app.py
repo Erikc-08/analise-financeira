@@ -106,10 +106,10 @@ for i in range(parcelas):
 valor_final_investimento = investimento
 
 # =========================
-# DECISÃO
+# DECISÃO 
 # =========================
-if valor_final_investimento > preco:
-    decisao = "Recomendação: Parcelar e investir."
+if vp_total < preco_avista:
+    decisao = "Recomendação: Parcelar (financeiramente mais barato no tempo)."
     cor = "green"
 else:
     decisao = "Recomendação: Pagar à vista."
@@ -124,7 +124,7 @@ col3, col4, col5 = st.columns(3)
 
 col3.metric("Valor à vista", f"R$ {preco_avista:,.2f}")
 col4.metric("Valor presente do parcelado", f"R$ {vp_total:,.2f}")
-col5.metric("Valor final investido", f"R$ {valor_final_investimento:,.2f}")
+col5.metric("Diferença", f"R$ {(vp_total - preco_avista):,.2f}")
 
 st.markdown(f"<h3 style='color:{cor}'>{decisao}</h3>", unsafe_allow_html=True)
 
