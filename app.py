@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import requests
 
 # =========================
-# FUNÇÃO 
+# FUNÇÃO
 # =========================
 def buscar_selic():
     try:
@@ -14,31 +14,15 @@ def buscar_selic():
         data = response.json()
         return float(data[0]["valor"])
     except:
-        return 13.75  # fallback
+        return 13.75
 
 # =========================
 # CONFIG
 # =========================
 st.set_page_config(page_title="Análise Financeira", layout="wide")
 
-st.markdown("""
-<style>
-body {
-    background-color: #0b1220;
-}
-h1, h2, h3 {
-    color: #e5e7eb;
-}
-.stButton>button {
-    background-color: #2563eb;
-    color: white;
-    border-radius: 6px;
-}
-</style>
-""", unsafe_allow_html=True)
-
 st.title("📊 Análise: Pagamento à Vista vs Parcelado")
-st.markdown("Ferramenta para análise de decisão financeira baseada em valor do dinheiro no tempo.")
+st.markdown("Simulação financeira com base no valor do dinheiro no tempo.")
 
 # =========================
 # TAXAS
@@ -68,16 +52,24 @@ with col2:
     taxa_nome = st.selectbox("Taxa de referência", list(taxas.keys()))
 
     # =========================
-    # LÓGICA DAS TAXAS
+    # CDI
     # =========================
     if taxa_nome == "CDI":
         cdi_percentual = st.slider("Rendimento (% do CDI)", 50, 150, 100)
 
-        taxa_base_cdi = selic_atual  # CDI ≈ Selic
+        taxa_base_cdi = selic_atual
         taxa_bruta = taxa_base_cdi * (cdi_percentual / 100)
 
-        # IR simplificado (15%)
-        imposto = 0.15
+        # IR baseado no tempo
+        if parcelas <= 6:
+            imposto = 0.225
+        elif parcelas <= 12:
+            imposto = 0.20
+        elif parcelas <= 24:
+            imposto = 0.175
+        else:
+            imposto = 0.15
+
         taxa_anual = taxa_bruta * (1 - imposto)
 
     elif taxa_nome == "Taxa Personalizada":
@@ -117,60 +109,50 @@ valor_final_investimento = investimento
 # DECISÃO
 # =========================
 if valor_final_investimento > preco:
-    decisao = "Recomendação: Parcelar e investir o capital disponível."
-    cor = "#22c55e"
+    decisao = "Recomendação: Parcelar e investir."
+    cor = "green"
 else:
-    decisao = "Recomendação: Efetuar pagamento à vista."
-    cor = "#ef4444"
+    decisao = "Recomendação: Pagar à vista."
+    cor = "red"
 
 # =========================
 # RESULTADOS
 # =========================
-st.subheader("Resumo da análise")
+st.subheader("Resumo")
 
 col3, col4, col5 = st.columns(3)
 
 col3.metric("Valor à vista", f"R$ {preco_avista:,.2f}")
-col4.metric("Valor presente do parcelamento", f"R$ {vp_total:,.2f}")
-col5.metric("Valor futuro do investimento", f"R$ {valor_final_investimento:,.2f}")
+col4.metric("Valor presente do parcelado", f"R$ {vp_total:,.2f}")
+col5.metric("Valor final investido", f"R$ {valor_final_investimento:,.2f}")
 
 st.markdown(f"<h3 style='color:{cor}'>{decisao}</h3>", unsafe_allow_html=True)
 
 # =========================
 # GRÁFICO
 # =========================
-st.subheader("Evolução do capital investido")
-
 fig = go.Figure()
 
 fig.add_trace(go.Scatter(
     y=valores_investidos,
     mode='lines+markers',
-    name='Investimento acumulado'
+    name='Investimento'
 ))
 
-fig.add_hline(y=preco, line_dash="dash", annotation_text="Valor do produto")
-
-fig.update_layout(
-    template="plotly_dark",
-    xaxis_title="Período (meses)",
-    yaxis_title="Valor (R$)"
-)
+fig.add_hline(y=preco, line_dash="dash", annotation_text="Preço")
 
 st.plotly_chart(fig, use_container_width=True)
 
 # =========================
 # TABELA
 # =========================
-st.subheader("Detalhamento por período")
-
 data = []
 
 for i in range(parcelas):
     data.append({
-        "Período": i+1,
-        "Parcela (R$)": parcela,
-        "Investimento acumulado (R$)": valores_investidos[i]
+        "Mês": i+1,
+        "Parcela": parcela,
+        "Investimento": valores_investidos[i]
     })
 
 df = pd.DataFrame(data)
